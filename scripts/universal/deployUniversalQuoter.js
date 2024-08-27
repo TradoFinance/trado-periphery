@@ -11,16 +11,16 @@ const para = {
 
 async function main() {
 
-    const iZiSwapFactory = deployed[net].iZiSwapFactory;
+    const TradoSwapFactory = deployed[net].TradoSwapFactory;
     console.log("Paramters: ");
-    console.log('iZiSwapFactory: ', iZiSwapFactory)
+    console.log('TradoSwapFactory: ', TradoSwapFactory)
     for ( var i in para) { console.log("    " + i + ": " + para[i]); }
   
     console.log('=====================');
     // deploy swap
     const Quoter = await ethers.getContractFactory("UniversalQuoter");
     const quoter = await Quoter.deploy(
-        iZiSwapFactory,
+        TradoSwapFactory,
         para.classicFactory,
     );
     await quoter.deployed();

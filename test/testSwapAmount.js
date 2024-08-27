@@ -3,7 +3,7 @@ const { ethers } = require("hardhat");
 
 const BigNumber = require('bignumber.js');
 const { strictEqual } = require("assert");
-const { getPoolParts, getIzumiswapFactory, addLiquidity } = require("./funcs.js")
+const { getPoolParts, getTradoswapFactory, addLiquidity } = require("./funcs.js")
 
 async function getToken(name, symbol, decimal) {
     const tokenFactory = await ethers.getContractFactory("TestToken")
@@ -138,7 +138,7 @@ function appendHex(hexString, newHexString) {
 }
 describe("swap", function () {
     var signer, miner, trader, receiver;
-    var izumiswapFactory;
+    var tradoswapFactory;
     var weth9;
     var nflm;
     var swap;
@@ -150,13 +150,13 @@ describe("swap", function () {
         [signer, miner, trader, receiver] = await ethers.getSigners();
         
         const {swapX2YModule, swapY2XModule, liquidityModule, limitOrderModule, flashModule} = await getPoolParts();
-        izumiswapFactory = await getIzumiswapFactory(receiver.address, swapX2YModule, swapY2XModule, liquidityModule, limitOrderModule, flashModule, signer);
-        console.log("get izumiswapFactory");
+        tradoswapFactory = await getTradoswapFactory(receiver.address, swapX2YModule, swapY2XModule, liquidityModule, limitOrderModule, flashModule, signer);
+        console.log("get tradoswapFactory");
         weth9 = await getWETH9(signer);
         console.log("get weth9");
-        nflm = await getNFTLiquidityManager(izumiswapFactory, weth9);
+        nflm = await getNFTLiquidityManager(tradoswapFactory, weth9);
         console.log("get nflm");
-        swap = await getSwap(izumiswapFactory, weth9);
+        swap = await getSwap(tradoswapFactory, weth9);
 
         tokenX = await getToken('a', 'a', 18);
         tokenY = await getToken('b', 'b', 18);

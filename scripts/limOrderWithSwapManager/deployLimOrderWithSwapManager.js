@@ -5,7 +5,7 @@ const deployed = require('../deployed.js');
 
 example: 
 
-HARDHAT_NETWORK='izumiTest' node scripts/nfLimOrderManager/deployNfLimOrder.js
+HARDHAT_NETWORK='tradoTest' node scripts/nfLimOrderManager/deployNfLimOrder.js
 
 */
 
@@ -16,8 +16,8 @@ const weth = v[2]
 async function main() {
     // deploy nft
     const LimitOrderWithSwapManager = await ethers.getContractFactory("LimitOrderWithSwapManager");
-    const iZiSwapFactory = deployed[net].iZiSwapFactory;
-    const manager = await LimitOrderWithSwapManager.deploy(iZiSwapFactory, weth);
+    const TradoSwapFactory = deployed[net].TradoSwapFactory;
+    const manager = await LimitOrderWithSwapManager.deploy(TradoSwapFactory, weth);
     console.log("LimitOrderWithSwapManager: ", manager.address);
     await manager.deployed();
 }

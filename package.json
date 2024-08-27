@@ -1,15 +1,6 @@
 {
-  "name": "@izumifinance/iziswap_periphery",
+  "name": "@tradofinance/trado-periphery",
   "version": "1.0.1",
-  "keywords": [
-    "iZUMi",
-    "iziswap",
-    "periphery"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/izumiFinance/iZiSwap-core"
-  },
   "files": [
     "contracts/*.sol",
     "contracts/interfaces/*.sol",

@@ -4,14 +4,14 @@ const { ethers } = require("hardhat");
 const BigNumber = require('bignumber.js');
 const { createPool, mint, getNFTLiquidityManager, setApprovalForAll, ownerOf } = require("./liquidityManager.js");
 const { getToken, getBalance, getWETH9 } = require("./tokens.js");
-const { getPoolParts, getIzumiswapFactory} = require('../funcs')
+const { getPoolParts, getTradoswapFactory} = require('../funcs')
 const { getSwap, swapPointDown, swapPointUp } = require('./swap');
 const { getLocker, deposit, collectAll, withdraw } = require("./locker.js");
 const { checkContains, checkStrVecEqual, checkStrLT, checkStrVecGT } = require("./check.js");
 
 describe("locker", function () {
     var signer, miner1, miner2, miner3, trader;
-    var izumiswapFactory;
+    var tradoswapFactory;
     var weth9;
     var nflm;
     var swap;
@@ -23,13 +23,13 @@ describe("locker", function () {
     beforeEach(async function() {
         [signer, miner1, miner2, miner3, trader] = await ethers.getSigners();
         const {swapX2YModule, swapY2XModule, liquidityModule, limitOrderModule, flashModule} = await getPoolParts();
-        izumiswapFactory = await getIzumiswapFactory(signer.address, swapX2YModule, swapY2XModule, liquidityModule, limitOrderModule, flashModule, signer);
-        console.log("get izumiswapFactory");
+        tradoswapFactory = await getTradoswapFactory(signer.address, swapX2YModule, swapY2XModule, liquidityModule, limitOrderModule, flashModule, signer);
+        console.log("get tradoswapFactory");
         weth9 = await getWETH9(signer);
         console.log("get weth9");
-        nflm = await getNFTLiquidityManager(izumiswapFactory.address, weth9.address);
+        nflm = await getNFTLiquidityManager(tradoswapFactory.address, weth9.address);
         console.log("get nflm");
-        swap = await getSwap(izumiswapFactory.address, weth9.address);
+        swap = await getSwap(tradoswapFactory.address, weth9.address);
         lockTime = 7*24*60*60;
         locker = await getLocker(nflm.address, 100)
         

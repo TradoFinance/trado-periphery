@@ -3,24 +3,24 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "../core/interfaces/IiZiSwapCallback.sol";
-import "../core/interfaces/IiZiSwapFactory.sol";
-import "../core/interfaces/IiZiSwapPool.sol";
+import "../core/interfaces/ITradoSwapCallback.sol";
+import "../core/interfaces/ITradoSwapFactory.sol";
+import "../core/interfaces/ITradoSwapPool.sol";
 
 import "../libraries/Path.sol";
 
-import "./interfaces/IiZiSwapClassicPair.sol";
-import "./interfaces/IiZiSwapClassicFactory.sol";
+import "./interfaces/ITradoSwapClassicPair.sol";
+import "./interfaces/ITradoSwapClassicFactory.sol";
 
 import "./UniversalBase.sol";
-import "./iZiSwapRouter.sol";
+import "./TradoSwapRouter.sol";
 import "./ClassicSwapRouter.sol";
 import "./types.sol";
 
 contract UniversalSwapRouter is 
     Ownable,
     UniversalBase,
-    iZiSwapRouter,
+    TradoSwapRouter,
     ClassicSwapRouter {
     
     using Path for bytes;
@@ -31,14 +31,14 @@ contract UniversalSwapRouter is
     address public charger;
 
     /// @notice constructor to create this contract
-    /// @param _iZiSwapFactory address of iZiSwap factory
-    /// @param _iZiClassicFactory address of iZiSwap classic factory
+    /// @param _TradoSwapFactory address of TradoSwap factory
+    /// @param _tradoClassicFactory address of TradoSwap classic factory
     /// @param _weth address of weth token
     /// @param _charger address of fee charger
-    constructor(address _iZiSwapFactory, address _iZiClassicFactory, address _weth, address _charger)
+    constructor(address _TradoSwapFactory, address _tradoClassicFactory, address _weth, address _charger)
         UniversalBase(_weth)
-        iZiSwapRouter(_iZiSwapFactory)
-        ClassicSwapRouter(_iZiClassicFactory)
+        TradoSwapRouter(_TradoSwapFactory)
+        ClassicSwapRouter(_tradoClassicFactory)
     {
         charger = _charger;
     }
@@ -52,7 +52,7 @@ contract UniversalSwapRouter is
         address payer,
         address recipient,
         uint256 value
-    ) internal override(ClassicSwapRouter, iZiSwapRouter) {
+    ) internal override(ClassicSwapRouter, TradoSwapRouter) {
         if (token == WETH9 && address(this).balance >= value) {
             // pay with WETH9
             IWETH9(WETH9).deposit{value: value}(); // wrap only what is needed to pay
@@ -72,7 +72,7 @@ contract UniversalSwapRouter is
         uint256 desire,
         address recipient,
         SwapCallbackData memory data
-    ) internal override(iZiSwapRouter, ClassicSwapRouter) returns (uint256 acquire, address tokenOut) {
+    ) internal override(TradoSwapRouter, ClassicSwapRouter) returns (uint256 acquire, address tokenOut) {
 
         address tokenIn;
         uint24 poolFee;
@@ -80,8 +80,8 @@ contract UniversalSwapRouter is
         (tokenOut, tokenIn, poolFee) = data.path.decodeFirstPool();
 
         if (poolFee != 0) {
-            // iZiSwap
-            acquire = iZiSwapDesireSingleInternal(
+            // TradoSwap
+            acquire = TradoSwapDesireSingleInternal(
                 SwapSingleParams({
                     tokenIn: tokenIn,
                     tokenOut: tokenOut,
@@ -92,8 +92,8 @@ contract UniversalSwapRouter is
                 data
             );
         } else {
-            // iZiSwap classic
-            require(iZiClassicFactory != address(0), "classic not supported!");
+            // TradoSwap classic
+            require(tradoClassicFactory != address(0), "classic not supported!");
             acquire = classicDesireSingleInternal(
                 SwapSingleParams({
                     tokenIn: tokenIn,
@@ -134,14 +134,14 @@ contract UniversalSwapRouter is
             uint256 _cost;
             
             if (poolFee != 0) {
-                // iZiSwap
-                (_cost, acquire) = iZiSwapAmountSingleInternal(
+                // TradoSwap
+                (_cost, acquire) = TradoSwapAmountSingleInternal(
                     params,
                     payer
                 );
             } else {
-                // iZiSwap classic
-                require(iZiClassicFactory != address(0), "classic not supported!");
+                // TradoSwap classic
+                require(tradoClassicFactory != address(0), "classic not supported!");
                 (_cost, acquire) = classicAmountSingleInternal(
                     params,
                     payer

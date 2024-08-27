@@ -1,23 +1,23 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.4;
 
-import "../core/interfaces/IiZiSwapCallback.sol";
-import "../core/interfaces/IiZiSwapFactory.sol";
-import "../core/interfaces/IiZiSwapPool.sol";
+import "../core/interfaces/ITradoSwapCallback.sol";
+import "../core/interfaces/ITradoSwapFactory.sol";
+import "../core/interfaces/ITradoSwapPool.sol";
 
 import "../libraries/Path.sol";
 
-abstract contract iZiSwapQuoter is IiZiSwapCallback {
+abstract contract TradoSwapQuoter is ITradoSwapCallback {
 
     using Path for bytes;
 
-    /// @notice address of iZiSwapFactory
-    address public immutable iZiSwapFactory;
+    /// @notice address of TradoSwapFactory
+    address public immutable TradoSwapFactory;
 
     /// @notice Constructor of base.
-    /// @param _iZiSwapFactory address of iZiSwapFactory
-    constructor(address _iZiSwapFactory) {
-        iZiSwapFactory = _iZiSwapFactory;
+    /// @param _TradoSwapFactory address of TradoSwapFactory
+    constructor(address _TradoSwapFactory) {
+        TradoSwapFactory = _TradoSwapFactory;
     }
 
     uint256 internal amountDesireCached;
@@ -49,7 +49,7 @@ abstract contract iZiSwapQuoter is IiZiSwapCallback {
             ,
             ,
             ,
-        ) = IiZiSwapPool(pool).state();
+        ) = ITradoSwapPool(pool).state();
     }
 
     function getUpperBoundaryPoint(uint24 fee, int24 currentPoint, bool limit) internal pure returns (int24 boundaryPoint) {
@@ -88,11 +88,11 @@ abstract contract iZiSwapQuoter is IiZiSwapCallback {
     /// @param tokenX tokenX of swap pool
     /// @param tokenY tokenY of swap pool
     /// @param fee fee amount of swap pool
-    function iZiSwapPool(address tokenX, address tokenY, uint24 fee) public view returns(address) {
-        return IiZiSwapFactory(iZiSwapFactory).pool(tokenX, tokenY, fee);
+    function TradoSwapPool(address tokenX, address tokenY, uint24 fee) public view returns(address) {
+        return ITradoSwapFactory(TradoSwapFactory).pool(tokenX, tokenY, fee);
     }
-    function iZiSwapVerify(address tokenX, address tokenY, uint24 fee) internal view {
-        require (msg.sender == iZiSwapPool(tokenX, tokenY, fee), "sp");
+    function TradoSwapVerify(address tokenX, address tokenY, uint24 fee) internal view {
+        require (msg.sender == TradoSwapPool(tokenX, tokenY, fee), "sp");
     }
 
     /// @notice Callback for swapY2X and swapY2XDesireX, in order to mark computed-amount of token and point after exchange.
@@ -105,9 +105,9 @@ abstract contract iZiSwapQuoter is IiZiSwapCallback {
         bytes calldata path
     ) external view override {
         (address token0, address token1, uint24 fee) = path.decodeFirstPool();
-        iZiSwapVerify(token0, token1, fee);
+        TradoSwapVerify(token0, token1, fee);
         
-        address poolAddr = iZiSwapPool(token0, token1, fee);
+        address poolAddr = TradoSwapPool(token0, token1, fee);
         (
             ,
             int24 currPt,
@@ -116,7 +116,7 @@ abstract contract iZiSwapQuoter is IiZiSwapCallback {
             ,
             ,
             ,
-        ) = IiZiSwapPool(poolAddr).state();
+        ) = ITradoSwapPool(poolAddr).state();
 
         if (token0 < token1) {
             // token1 is y, amount of token1 is calculated
@@ -150,9 +150,9 @@ abstract contract iZiSwapQuoter is IiZiSwapCallback {
         bytes calldata path
     ) external view override {
         (address token0, address token1, uint24 fee) = path.decodeFirstPool();
-        iZiSwapVerify(token0, token1, fee);
+        TradoSwapVerify(token0, token1, fee);
 
-        address poolAddr = iZiSwapPool(token0, token1, fee);
+        address poolAddr = TradoSwapPool(token0, token1, fee);
         (
             ,
             int24 currPt,
@@ -161,7 +161,7 @@ abstract contract iZiSwapQuoter is IiZiSwapCallback {
             ,
             ,
             ,
-        ) = IiZiSwapPool(poolAddr).state();
+        ) = ITradoSwapPool(poolAddr).state();
 
         if (token0 < token1) {
             // token0 is x, amount of token0 is input param
@@ -184,22 +184,22 @@ abstract contract iZiSwapQuoter is IiZiSwapCallback {
             }
         }
     }
-    struct iZiSwapQuoteSingleParams {
+    struct TradoSwapQuoteSingleParams {
         address tokenIn;
         address tokenOut;
         uint24 fee;
         uint128 amount;
         bool limit;
     }
-    function iZiSwapAmountSingleInternal(
-        iZiSwapQuoteSingleParams memory params
+    function TradoSwapAmountSingleInternal(
+        TradoSwapQuoteSingleParams memory params
     ) internal returns (uint256 acquire, int24 currPt) {
-        address poolAddr = iZiSwapPool(params.tokenOut, params.tokenIn, params.fee);
+        address poolAddr = TradoSwapPool(params.tokenOut, params.tokenIn, params.fee);
         int24 currentPoint = getCurrentPoint(poolAddr);
         if (params.tokenIn < params.tokenOut) {
             int24 boundaryPoint = getLowerBoundaryPoint(params.fee, currentPoint, params.limit);
             try
-                IiZiSwapPool(poolAddr).swapX2Y(
+                ITradoSwapPool(poolAddr).swapX2Y(
                     address(this), params.amount, boundaryPoint,
                     abi.encodePacked(params.tokenIn, params.fee, params.tokenOut)
                 )
@@ -209,7 +209,7 @@ abstract contract iZiSwapQuoter is IiZiSwapCallback {
         } else {
             int24 boundaryPoint = getUpperBoundaryPoint(params.fee, currentPoint, params.limit);
             try
-                IiZiSwapPool(poolAddr).swapY2X(
+                ITradoSwapPool(poolAddr).swapY2X(
                     address(this), params.amount, boundaryPoint,
                     abi.encodePacked(params.tokenIn, params.fee, params.tokenOut)
                 )
@@ -218,16 +218,16 @@ abstract contract iZiSwapQuoter is IiZiSwapCallback {
             }
         }
     }
-    function iZiSwapDesireSingleInternal(
-        iZiSwapQuoteSingleParams memory params
+    function TradoSwapDesireSingleInternal(
+        TradoSwapQuoteSingleParams memory params
     ) internal returns (uint256 cost, int24 currPt) {
-        address poolAddr = iZiSwapPool(params.tokenOut, params.tokenIn, params.fee);
+        address poolAddr = TradoSwapPool(params.tokenOut, params.tokenIn, params.fee);
         amountDesireCached = params.amount;
         int24 currentPoint = getCurrentPoint(poolAddr);
         if (params.tokenIn < params.tokenOut) {
             int24 boundaryPoint = getLowerBoundaryPoint(params.fee, currentPoint, params.limit);
             try
-                IiZiSwapPool(poolAddr).swapX2YDesireY(
+                ITradoSwapPool(poolAddr).swapX2YDesireY(
                     address(this), params.amount + 1, boundaryPoint,
                     abi.encodePacked(params.tokenOut, params.fee, params.tokenIn)
                 )
@@ -237,7 +237,7 @@ abstract contract iZiSwapQuoter is IiZiSwapCallback {
         } else {
             int24 boundaryPoint = getUpperBoundaryPoint(params.fee, currentPoint, params.limit);
             try
-                IiZiSwapPool(poolAddr).swapY2XDesireX(
+                ITradoSwapPool(poolAddr).swapY2XDesireX(
                     address(this), params.amount + 1, boundaryPoint,
                     abi.encodePacked(params.tokenOut, params.fee, params.tokenIn)
                 )

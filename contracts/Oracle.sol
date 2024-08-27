@@ -3,7 +3,7 @@ pragma solidity ^0.8.4;
 
 // import "hardhat/console.sol";
 
-interface IiZiSwapPool {
+interface ITradoSwapPool {
 
     function state() external view
     returns(
@@ -53,7 +53,7 @@ contract Oracle {
             observation.blockTimestamp,
             observation.accPoint,
             observation.initialized
-        ) = IiZiSwapPool(pool).observations(observationIndex);
+        ) = ITradoSwapPool(pool).observations(observationIndex);
     }
 
     /// @dev query oldest observation
@@ -94,7 +94,7 @@ contract Oracle {
             uint16 observationNextQueueLen,
             ,
             ,
-        ) = IiZiSwapPool(pool).state();
+        ) = ITradoSwapPool(pool).state();
         state.currentPoint = currentPoint;
         state.sqrtPrice_96 = sqrtPrice_96;
         state.observationCurrentIndex = observationCurrentIndex;
@@ -110,7 +110,7 @@ contract Oracle {
         uint32[] memory secondsAgo = new uint32[](2);
         secondsAgo[0] = uint32(block.timestamp) - targetTimestamp;
         secondsAgo[1] = 0;
-        int56[] memory accPoints = IiZiSwapPool(pool).observe(secondsAgo);
+        int56[] memory accPoints = ITradoSwapPool(pool).observe(secondsAgo);
         uint56 timeDelta = uint32(block.timestamp) - targetTimestamp;
 
         int56 pointAvg = (accPoints[1] - accPoints[0]) / int56(timeDelta);

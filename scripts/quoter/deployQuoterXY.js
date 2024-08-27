@@ -5,7 +5,7 @@ const deployed = require('../deployed.js');
 
 example: 
 
-HARDHAT_NETWORK='izumiTest' node scripts/swap/deploySwap.js
+HARDHAT_NETWORK='tradoTest' node scripts/swap/deploySwap.js
 
 */
 
@@ -15,7 +15,7 @@ const weth = v[2];
 
 async function main() {
 
-    const factory = deployed[net].iZiSwapFactory;
+    const factory = deployed[net].TradoSwapFactory;
     // deploy Quoter
     const Quoter = await ethers.getContractFactory("QuoterXY");
     const quoter = await Quoter.deploy(factory, weth);
