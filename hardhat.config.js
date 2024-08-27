@@ -38,6 +38,10 @@ module.exports = {
     hardhat: {
       allowUnlimitedContractSize: true,
     },
+    flowTest: {
+      url: 'https://testnet.evm.nodes.onflow.org',
+      accounts: [sk],
+    }
   },
   etherscan: { 
     apiKey: apiKey,
