@@ -41,6 +41,10 @@ module.exports = {
     flowTest: {
       url: 'https://testnet.evm.nodes.onflow.org',
       accounts: [sk],
+    },
+    flow: {
+      url: 'https://mainnet.evm.nodes.onflow.org',
+      accounts: [sk],
     }
   },
   etherscan: { 
